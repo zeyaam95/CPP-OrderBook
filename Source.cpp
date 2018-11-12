@@ -1,5 +1,6 @@
-#include <iostream>
 #include <ctime>
+#include "Order.h"
+#include "Queue.h"
 
 using namespace std;
 
@@ -17,5 +18,8 @@ void timeDelay(double t)
 }
 
 int main() {
+	Queue<Order> Bids;
+	Queue<Order> Asks;
+
 	return 0;
 }
