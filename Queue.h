@@ -29,6 +29,23 @@ public:
 			delete prevNode;
 		}
 	}
-	void enQueue(anyType&);
+	void enQueue(anyType& item) {
+		if (!front) {
+			front = Node(item);
+			return;
+		}
+		Node *temp = front, *prevNode = nullptr;
+		while(temp && temp->value > item) {
+			prevNode = temp;
+			temp = temp->back;
+		}
+		if (!temp) {
+			prevNode->next = Node(item);
+			return;
+		}
+		prevNode->next = Node(item);
+		prevNode = prevNode->next;
+		prevNode->next = temp;
+	}
 	void deQueue(anyType&);
 };

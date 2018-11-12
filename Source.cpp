@@ -10,7 +10,7 @@ void timeDelay(double t)
 	time_t initial, final;
 	time_t ltime;
 	initial = time(&ltime);
-	final = initial + t;
+	final = initial + static_cast<time_t>(t);
 	while (time(&ltime) < final)
 	{
 	}
@@ -18,8 +18,8 @@ void timeDelay(double t)
 }
 
 int main() {
-	Queue<Order> Bids;
-	Queue<Order> Asks;
+	Queue<Bid> Bids;
+	Queue<Ask> Asks;
 
 	return 0;
 }
