@@ -2,9 +2,12 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
-
+/*
 enum TYPE {
 	MarketOrder = 0,
 	LimitOrder = 1
@@ -13,31 +16,33 @@ enum ACTION {
 	Buy = 1,
 	Sell = -1
 };
-
+*/
 class Order
 {
 protected:
-	TYPE orderType;
-	ACTION orderAction;
+	int orderType;
+	int orderAction;
 	double orderPrice;
 	long int numOfShares, accountID;
+	time_t timeStamp = time(NULL);
 public:
 	// Constructors
 	Order();
-	Order(TYPE&, ACTION&, double&, long int&, long int&);
+	Order(int&, int&, double&, long&, long&);
 	~Order();
 	// Setters
-	void setOrderType(TYPE& type) {this->orderType = type;}
-	void setOrderAction(ACTION& action) {this->orderAction = action;}
+	void setOrderType(int& type) {this->orderType = type;}
+	void setOrderAction(int& action) {this->orderAction = action;}
 	void setOrderPrice(double& price) {this->orderPrice = price;}
 	void setNumOfShares(long int& shares) {this->numOfShares = shares;}
 	void setAccountID(long int& id) {this->accountID = id;}
 	// Getters
-	TYPE getOrderType() const {return this->orderType;}
-	ACTION getActionType() const {return this->orderAction;}
-	double getOrderPrice() const {return this->orderPrice;}
-	long int getNumOfShares() const {return this->numOfShares;}
-	long int getAccountID() const {return this->accountID;}
+	int& getOrderType() {return this->orderType;}
+	int& getActionType() {return this->orderAction;}
+	double& getOrderPrice() {return this->orderPrice;}
+	long& getNumOfShares() {return this->numOfShares;}
+	long& getAccountID() {return this->accountID;}
+	time_t& getTimeStamp() {return this->timeStamp;}
 	// Overloaded Operators
 	friend istream& operator>>(istream&, Order&);
 	friend ostream& operator<<(ostream&, Order&);
@@ -53,38 +58,42 @@ public:
 */
 class Ask : public Order {
 public:
-	Ask(TYPE& type, ACTION& action , double& price, long int& shares, long int& accountid)
-	 : Order(type, action , price, shares, accountid) {}
+	Ask(int& type, int& action , double& price, long& shares, long& accountid)
+		: Order(type, action, price, shares, accountid) {
+		this->timeStamp = time(NULL);
+	}
 
-	bool operator<=(const Order&) {
+	bool operator<=(Ask& r) {
+		return this->getOrderPrice() < r.getOrderPrice();
+	}
+	bool operator>=(Ask& r) {
+		return this->getOrderPrice() > r.getOrderPrice();
+	}
+	bool operator==(Ask&) {
 
 	}
-	bool operator>=(const Order&) {
-
-	}
-	bool operator==(const Order&) {
-
-	}
-	bool operator!=(const Order&) {
+	bool operator!=(Ask&) {
 
 	}
 };
 
 class Bid : public Order {
 public:
-	Bid(TYPE& type, ACTION& action , double& price, long int& shares, long int& accountid)
-	 : Order(type, action , price, shares, accountid) {}
+	Bid(int& type, int& action , double& price, long& shares, long& accountid)
+	 : Order(type, action , price, shares, accountid) {
+		this->timeStamp = time(NULL);
+	}
 	
-	bool operator<=(const Order&) {
+	bool operator<=(Bid& r) {
+		return this->getOrderPrice() < r.getOrderPrice();
+	}
+	bool operator>=(Bid& r) {
+		return this->getOrderPrice() > r.getOrderPrice();
+	}
+	bool operator==(Bid&) {
 
 	}
-	bool operator>=(const Order&) {
-
-	}
-	bool operator==(const Order&) {
-
-	}
-	bool operator!=(const Order&) {
+	bool operator!=(Bid&) {
 
 	}
 };

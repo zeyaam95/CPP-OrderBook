@@ -1,14 +1,19 @@
 #include "Order.h"
 
 Order::Order() {
-
+	this->orderType = 0;
+	this->orderAction = 0;
+	this->orderPrice = 0;
+	this->numOfShares = 0;
+	this->accountID = 0;
+	this->timeStamp = time(NULL);
 }
 
 Order::~Order() {
 
 }
 
-Order::Order(TYPE& type, ACTION& action, double& price, long int& shares, long int& accountid) {
+Order::Order(int& type, int& action, double& price, long& shares, long& accountid) {
 	this->orderType = type;
 	this->orderAction = action;
 	this->orderPrice = price;
@@ -17,22 +22,31 @@ Order::Order(TYPE& type, ACTION& action, double& price, long int& shares, long i
 }
 
 istream& operator>>(istream& is , Order& ord) {
-	double price;
-	long int validation, id;
-	
-	is >> validation;
-	if (validation != 0 || validation != 1) {
+	is >> ord.orderType >> ord.orderAction >> ord.orderPrice >> ord.numOfShares >> ord.accountID;
+	ord.timeStamp = time(NULL);
+	return is;
+}
+
+ostream& operator<<(ostream& os, Order& ord) {
+	os 	<< ord.getOrderType() 	<< " "
+		<< ord.getActionType() 	<< " "
+		<< ord.getOrderPrice()	<< " "
+		<< ord.getNumOfShares() << " "
+		<< ord.getAccountID()   << " "
+		<< ord.getTimeStamp()   << endl;
+	return os;
+}
+
+/*
+	if (type != 0 || type != 1) {
 		throw "INVALID TYPE ERROR: Order Type can only be a 0 (Market) or a 1 (Limited).\n";
 	}
-	TYPE type = static_cast<TYPE>(validation);
-	ord.setOrderType(type);
-
-	is >> validation;
-	if (validation != -1 || validation != 1) {
+	ord.orderType = type;
+	
+	if (action != -1 || action != 1) {
 		throw "INVALID ACTION ERROR: Order Action can only be a -1 (Sell) or a 1 (Buy).\n";
 	}
-	ACTION act = static_cast<ACTION>(validation);
-	ord.setOrderAction(act);
+	ord.setOrderAction(action);
 
 	is >> price;
 	if (price < 0) {
@@ -53,16 +67,4 @@ istream& operator>>(istream& is , Order& ord) {
 	ord.setAccountID(id);
 
 	is >> ord.orderPrice >> ord.numOfShares >> ord.accountID;
-	ord.orderPrice = ord.orderPrice - fmod(ord.orderPrice, 0.01);
-
-	return is;
-}
-
-ostream& operator<<(ostream& os, Order& ord) {
-	os 	<< ord.getOrderType() 	<< " "
-		<< ord.getActionType() 	<< " "
-		<< ord.getOrderPrice()	<< " "
-		<< ord.getNumOfShares() << " "
-		<< ord.getAccountID() 	<< endl;
-	return os;
-}
+	*/
