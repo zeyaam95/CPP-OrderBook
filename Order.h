@@ -7,16 +7,7 @@
 #include <sstream>
 
 using namespace std;
-/*
-enum TYPE {
-	MarketOrder = 0,
-	LimitOrder = 1
-};
-enum ACTION {
-	Buy = 1,
-	Sell = -1
-};
-*/
+
 class Order
 {
 protected:
@@ -37,13 +28,14 @@ public:
 	void setNumOfShares(long int& shares) {this->numOfShares = shares;}
 	void setAccountID(long int& id) {this->accountID = id;}
 	// Getters
-	int& getOrderType() {return this->orderType;}
-	int& getActionType() {return this->orderAction;}
-	double& getOrderPrice() {return this->orderPrice;}
-	long& getNumOfShares() {return this->numOfShares;}
-	long& getAccountID() {return this->accountID;}
-	time_t& getTimeStamp() {return this->timeStamp;}
+	int getOrderType() {return this->orderType;}
+	int getActionType() {return this->orderAction;}
+	double getOrderPrice() {return this->orderPrice;}
+	long getNumOfShares() {return this->numOfShares;}
+	long getAccountID() {return this->accountID;}
+	time_t getTimeStamp() {return this->timeStamp;}
 	// Overloaded Operators
+	void operator=(Order&);
 	friend istream& operator>>(istream&, Order&);
 	friend ostream& operator<<(ostream&, Order&);
 };
@@ -58,16 +50,16 @@ public:
 */
 class Ask : public Order {
 public:
-	Ask(int& type, int& action , double& price, long& shares, long& accountid)
+	Ask(int type, int action , double price, long shares, long accountid)
 		: Order(type, action, price, shares, accountid) {
 		this->timeStamp = time(NULL);
 	}
 
 	bool operator<=(Ask& r) {
-		return this->getOrderPrice() < r.getOrderPrice();
+		return this->getOrderPrice() <= r.getOrderPrice();
 	}
 	bool operator>=(Ask& r) {
-		return this->getOrderPrice() > r.getOrderPrice();
+		return this->getOrderPrice() >= r.getOrderPrice();
 	}
 	bool operator==(Ask&) {
 
@@ -79,16 +71,16 @@ public:
 
 class Bid : public Order {
 public:
-	Bid(int& type, int& action , double& price, long& shares, long& accountid)
+	Bid(int type, int action , double price, long shares, long accountid)
 	 : Order(type, action , price, shares, accountid) {
 		this->timeStamp = time(NULL);
 	}
 	
 	bool operator<=(Bid& r) {
-		return this->getOrderPrice() < r.getOrderPrice();
+		return this->getOrderPrice() <= r.getOrderPrice();
 	}
 	bool operator>=(Bid& r) {
-		return this->getOrderPrice() > r.getOrderPrice();
+		return this->getOrderPrice() >= r.getOrderPrice();
 	}
 	bool operator==(Bid&) {
 

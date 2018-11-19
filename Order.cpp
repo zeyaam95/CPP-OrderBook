@@ -21,6 +21,16 @@ Order::Order(int& type, int& action, double& price, long& shares, long& accounti
 	this->accountID = accountid;
 }
 
+void Order::operator=(Order& other) {
+	this->orderType = other.getOrderType();
+	this->orderAction = other.getActionType();
+	this->orderPrice = other.getOrderPrice();
+	this->numOfShares = other.getNumOfShares();
+	this->accountID = other.getAccountID();
+	this->timeStamp = other.getTimeStamp();
+}
+
+
 istream& operator>>(istream& is , Order& ord) {
 	is >> ord.orderType >> ord.orderAction >> ord.orderPrice >> ord.numOfShares >> ord.accountID;
 	ord.timeStamp = time(NULL);

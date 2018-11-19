@@ -33,14 +33,13 @@ public:
 			delete prevNode;
 		}
 	}
-	void enQueue(anyType *item) {
+	void enQueueBid(anyType *item) {
 		if (!front) {
 			front = new Node<anyType>(item);
 			size++;
 			return;
 		}
 		else if (*item >= *(front->value)) {
-			cout << "Added at the front! "<< *item <<endl;
 			Node<anyType> *prevNode = new Node<anyType>(item);
 			prevNode->back = front;
 			front = prevNode;
@@ -56,45 +55,69 @@ public:
 					prevNode = new Node<anyType>(item);
 					prevNode->back = temp->back;
 					temp->back = prevNode;
-					cout << "Node Added! *item <= *(temp->value) && *item >= *(temp->back->value))" << endl;
 					size++;
 					return;
 				}
-				cout << "Node Tranversed!"<< endl;
 				temp = temp->back;
 			}
-			if (prevNode == nullptr) {
-				temp->back = new Node<anyType>(item);
-				cout << "Node Added! prevNode == nullptr" << endl;
-				size++;
-				return;
-			}/**
-			prevNode->back = new Node<anyType>(item);
-			prevNode = prevNode->back;
-			prevNode->back = temp;
-			cout << "Node Added!" << endl;*/
+			temp->back = new Node<anyType>(item);
+			size++;
+			return;
+		}
+	}
+
+	void enQueueAsk(anyType *item) {
+		if (!front) {
+			front = new Node<anyType>(item);
+			size++;
+			return;
+		}
+		else if (*item <= *(front->value)) {
+			Node<anyType> *prevNode = new Node<anyType>(item);
+			prevNode->back = front;
+			front = prevNode;
+			size++;
+			return;
+		}
+		else {
+			Node<anyType> *temp = front;
+			Node<anyType> *prevNode = nullptr;
+			while (temp->back != nullptr) {
+				prevNode = temp;
+				if (*item >= *(temp->value) && *item <= *(temp->back->value)) {
+					prevNode = new Node<anyType>(item);
+					prevNode->back = temp->back;
+					temp->back = prevNode;
+					size++;
+					return;
+				}
+				temp = temp->back;
+			}
+			temp->back = new Node<anyType>(item);
+			size++;
 			return;
 		}
 	}
 
 	void deQueue() {
-		if (!front) return;
-		Node<anyType>* temp = this->front;
+		if (!this->front) return;
+		Node<anyType>* queue = this->front;
 		front = front->back;
-		free(temp);
+		free(queue);
+		size--;
 	}
 
 	anyType& operator[](const int NUM) {
 		Node<anyType> *temp = front;
-		while (temp != NULL && NUM != 0) {
+		while (temp != NULL && NUM != 0 && NUM < this->size) {
 			temp = temp->back;
 		}
 		return *(temp->value);
 	}
 	
 	friend std::ostream& operator<<(std::ostream& out, const Queue<anyType>& q) {
+		if (!q.front) return out;
 		Node<anyType> *temp = q.front;
-		cout << *(temp->back->value);
 		while (temp) {
 			out << *(temp->value) << endl;
 			temp = temp->back;
