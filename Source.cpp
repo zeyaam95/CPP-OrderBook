@@ -80,7 +80,10 @@ int main() {
 		printTransaction(TRANSACTIONS);
 		std::cout << "==========================\n\n";
 		if(inputOrder->getActionType() == 1) {
-			if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice())) {
+			if (inputOrder->getOrderType() == 0 && Asks.length() == 0) {
+				break;
+			}
+			else if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice())) {
 				if (Asks[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
 					std::cout << "ASK: " << Asks[0] << " " << "BID: " << *inputOrder << endl;
@@ -148,7 +151,10 @@ int main() {
 			}
 		}
 		else {
-			if (Bids.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() <= Bids[0].getOrderPrice())) {
+			if (inputOrder->getOrderType() == 0 && Bids.length() == 0) {
+				break;
+			}
+			else if (Bids.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() <= Bids[0].getOrderPrice())) {
 				if (Bids[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
 					std::cout << "BID: " << Bids[0] << " " << "ASK: " << *inputOrder << endl;
