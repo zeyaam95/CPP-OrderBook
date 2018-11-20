@@ -1,10 +1,4 @@
 ﻿  Source.cpp
 e:\dropbox\dropbox\code\baruch\cis4100\assignments\assignment4\source.cpp(28): warning C4018: '<': signed/unsigned mismatch
-e:\dropbox\dropbox\code\baruch\cis4100\assignments\assignment4\source.cpp(110): error C2039: 'enQueue': is not a member of 'Queue<Bid>'
-  e:\dropbox\dropbox\code\baruch\cis4100\assignments\assignment4\source.cpp(67): note: see declaration of 'Queue<Bid>'
-  Generating Code...
-  Compiling...
-  Queue.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  Order.cpp
+  Assignment4.vcxproj -> E:\Dropbox\Dropbox\Code\Baruch\CIS4100\Assignments\Assignment4\Debug\Assignment4.exe
+  Assignment4.vcxproj -> E:\Dropbox\Dropbox\Code\Baruch\CIS4100\Assignments\Assignment4\Debug\Assignment4.pdb (Full PDB)

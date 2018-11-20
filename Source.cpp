@@ -44,7 +44,7 @@ void timeDelay(double t)
 }
 
 template <typename OrderTypeA, typename OrderTypeB>
-void executeTransaction(Queue<OrderTypeA> anOrder, OrderTypeB incomingOrder) {
+inline void executeTransaction(Queue<OrderTypeA> anOrder, OrderTypeB incomingOrder) {
 	if (anOrder.length() == 0) return;
 	if (anOrder[0].getNumOfShares() > incomingOrder.getNumOfShares()) {
 		TRANSACTIONS.push_back(Transaction( incomingOrder.getAccountID(), anOrder[0].getAccountID(), anOrder[0].getOrderPrice(), incomingOrder.getNumOfShares(), time(NULL)));
@@ -79,11 +79,11 @@ int main() {
 		std::cout << "==========================\n\n";
 		printTransaction(TRANSACTIONS);
 		std::cout << "==========================\n\n";
-		if(inputOrder->getActionType() == 1) {
+		if(inputOrder->getActionType() == 1) {/*
 			if (inputOrder->getOrderType() == 0 && Asks.length() == 0) {
 				break;
 			}
-			else if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice())) {
+			else */if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice())) {
 				if (Asks[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
 					std::cout << "ASK: " << Asks[0] << " " << "BID: " << *inputOrder << endl;
@@ -102,7 +102,7 @@ int main() {
 				else {
 					while (inputOrder->getNumOfShares() > 0 && Asks.length() > 0) {
 						std::cout << "\n<<<>>> WHILE LOOP IN BID LAND <<<>>>\n";
-						if (inputOrder->getOrderPrice() < Asks[0].getOrderPrice()) {
+						if (inputOrder->getOrderPrice() < Asks[0].getOrderPrice() && inputOrder->getOrderPrice() !=0) {
 							std::cout << "\nCREATING BID\n";
 							Bid *newBid = new Bid(inputOrder->getOrderType(),
 								inputOrder->getActionType(),
@@ -135,10 +135,9 @@ int main() {
 						}
 					}
 				}
-				
-				
 			}
 			else {
+				std::cout << "CONDITION: " << (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice()))<<'\n';
 				std::cout << "\nCREATING BID\n";
 				Bid *newBid = new Bid(inputOrder->getOrderType(),
 					inputOrder->getActionType(),
@@ -152,7 +151,7 @@ int main() {
 		}
 		else {
 			if (inputOrder->getOrderType() == 0 && Bids.length() == 0) {
-				break;
+				cout << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID()<<" Volume : "<<inputOrder->getNumOfShares() <<" - unmatched"<<endl;
 			}
 			else if (Bids.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() <= Bids[0].getOrderPrice())) {
 				if (Bids[0].getNumOfShares() > inputOrder->getNumOfShares()) {
