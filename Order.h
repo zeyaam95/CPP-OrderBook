@@ -1,3 +1,6 @@
+/*
+Author: Zeyaam Shahid
+*/
 #pragma once
 #include <iostream>
 #include <string>
@@ -55,17 +58,23 @@ public:
 		this->timeStamp = time(NULL);
 	}
 
-	bool operator<=(Ask& r) {
+	bool operator<=(Order& r) {
 		return this->getOrderPrice() <= r.getOrderPrice();
 	}
-	bool operator>=(Ask& r) {
+	bool operator>=(Order& r) {
 		return this->getOrderPrice() >= r.getOrderPrice();
 	}
-	bool operator==(Ask&) {
-
+	bool operator<(Order& r) {
+		return this->getOrderPrice() < r.getOrderPrice();
 	}
-	bool operator!=(Ask&) {
-
+	bool operator>(Order& r) {
+		return this->getOrderPrice() > r.getOrderPrice();
+	}
+	bool operator==(Order& r) {
+		return this->getOrderPrice() == r.getOrderPrice();
+	}
+	bool operator!=(Order& r) {
+		return this->getOrderPrice() != r.getOrderPrice();
 	}
 };
 
@@ -76,16 +85,22 @@ public:
 		this->timeStamp = time(NULL);
 	}
 	
-	bool operator<=(Bid& r) {
+	bool operator<=(Order& r) {
 		return this->getOrderPrice() <= r.getOrderPrice();
 	}
-	bool operator>=(Bid& r) {
+	bool operator>=(Order& r) {
 		return this->getOrderPrice() >= r.getOrderPrice();
 	}
-	bool operator==(Bid&) {
-
+	bool operator<(Order& r) {
+		return this->getOrderPrice() < r.getOrderPrice();
 	}
-	bool operator!=(Bid&) {
-
+	bool operator>(Order& r) {
+		return this->getOrderPrice() > r.getOrderPrice();
+	}
+	bool operator==(Order& r) {
+		return this->getOrderPrice() == r.getOrderPrice();
+	}
+	bool operator!=(Order& r) {
+		return this->getOrderPrice() != r.getOrderPrice();
 	}
 };

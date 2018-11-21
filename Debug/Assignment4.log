@@ -1,4 +1,4 @@
 ﻿  Source.cpp
-e:\dropbox\dropbox\code\baruch\cis4100\assignments\assignment4\source.cpp(28): warning C4018: '<': signed/unsigned mismatch
+e:\dropbox\dropbox\code\baruch\cis4100\assignments\assignment4\source.cpp(84): warning C4244: '=': conversion from 'double' to 'time_t', possible loss of data
   Assignment4.vcxproj -> E:\Dropbox\Dropbox\Code\Baruch\CIS4100\Assignments\Assignment4\Debug\Assignment4.exe
   Assignment4.vcxproj -> E:\Dropbox\Dropbox\Code\Baruch\CIS4100\Assignments\Assignment4\Debug\Assignment4.pdb (Full PDB)

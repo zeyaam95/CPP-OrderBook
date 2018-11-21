@@ -1,9 +1,13 @@
+/*
+Author: Zeyaam Shahid
+*/
 #include "Order.h"
 #include "Queue.h"
 #include <vector>
 
 using namespace std;
 
+//Transaction struct for easier processing
 struct Transaction {
 	long BuyerID, SellerID, Shares;
 	double Price;
@@ -14,217 +18,248 @@ struct Transaction {
 };
 
 ostream& operator<<(ostream& os, Transaction& tr) {
-	os << tr.BuyerID << " "
+	 os << tr.BuyerID << " "
 		<< tr.SellerID << " "
-		<< tr.Shares << " "
 		<< tr.Price << " "
+		<< tr.Shares << " "
 		<< tr.TimeStamp << endl;
 	return os;
 }
 
+//Declaring a global Transaction vector
 vector<Transaction> TRANSACTIONS;
 
-void printTransaction(vector<Transaction> Tr) {
-	for (int i = 0; i < Tr.size(); i++) {
-		std::cout << Tr[i] << endl;
+//Function Prototypes
+void executeTransactions(Queue<Ask>&, Queue<Bid>&);
+void printTransaction(Transaction &, string, double);
+void saveAskBook(Queue<Ask> &);
+void saveBidBook(Queue<Bid> &);
+void timeDelay(double);
+
+int main() {
+	Queue<Bid> Bids;
+	Queue<Ask> Asks;
+	executeTransactions(Asks, Bids);
+	double delay = 0.5, lastPrice = 114.65;
+	string stockTicker = "XYZ", fileName;
+	saveAskBook(Asks);
+	saveBidBook(Bids);
+	system("pause");
+	return 0;
+}
+
+void printTransaction(Transaction &Tr, string ticker, double lPrice) {
+	std::cout << fixed << setprecision(2) << noshowpos 
+		<< ticker << " " << Tr.Price << setprecision(2) 
+		<< showpos<< " "<< (Tr.Price - lPrice) << 
+		setprecision(2) << " (" << (1 - (Tr.Price / lPrice)) * 100 << "%)" << endl;
+}
+
+void saveAskBook(Queue<Ask> &AskBook) {
+	if (AskBook.length() > 0) {
+		ofstream ask;
+		ask.open("askbook.dat");
+		for (int i = 0; i < AskBook.length(); i++) {
+			ask << AskBook[i] << endl;
+		}
+		ask.close();
 	}
 }
 
+void saveBidBook(Queue<Bid> &BidBook) {
+	if (BidBook.length() > 0) {
+		ofstream bid;
+		bid.open("bidbook.dat");
+		for (int i = 0; i < BidBook.length(); i++) {
+			bid << BidBook[i] << endl;
+		}
+		bid.close();
+	}
+}
 
-void timeDelay(double t)
-{
+void timeDelay(double t) {
 	time_t initial, final;
 	time_t ltime;
 	initial = time(&ltime);
-	final = initial + static_cast<time_t>(t);
+	final = initial + t;
 	while (time(&ltime) < final)
 	{
 	}
 	return;
 }
 
-template <typename OrderTypeA, typename OrderTypeB>
-inline void executeTransaction(Queue<OrderTypeA> anOrder, OrderTypeB incomingOrder) {
-	if (anOrder.length() == 0) return;
-	if (anOrder[0].getNumOfShares() > incomingOrder.getNumOfShares()) {
-		TRANSACTIONS.push_back(Transaction( incomingOrder.getAccountID(), anOrder[0].getAccountID(), anOrder[0].getOrderPrice(), incomingOrder.getNumOfShares(), time(NULL)));
-		long shareDiff = anOrder[0].getNumOfShares() - incomingOrder.getNumOfShares();
-		anOrder[0].setNumOfShares(shareDiff);
-	}
-	/*
-	else {
-		while (incomingOrder.getNumOfShares() > 0) {
-			executeTransaction(anOrder, incomingOrder);
-			long shareDiff = incomingOrder.getNumOfShares() - anOrder[0].getNumOfShares();
-			incomingOrder.setNumOfShares(shareDiff);
-		}
-	}
-	*/
-}
-
-
-int main() {
-	Queue<Bid> Bids;
-	Queue<Ask> Asks;
+void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 	fstream ordersFile;
+	ofstream trans;
 	long shareDiff;
+	double delay = 0.5, lastPrice = 114.65;
+	string stockTicker = "XYZ", fileName;
+	cout << "Enter the simulation delay in fraction of a second (e.g. 0.1) = ";
+	cin >> delay;
+	cout << "Enter the ticker of the stock: ";
+	cin >> stockTicker;
+	cout << "Enter the closing price from yesterday: ";
+	cin >> lastPrice;
+	cout << "Enter the order data file name: ";
+	cin >> fileName;
 	ordersFile.open("shortorder.dat", ios::in);
+	trans.open("trans.dat");
 	Order *inputOrder = new Order;
-	//Order temp;
 	while (!ordersFile.eof()) {
-
+		// Get an order from the file
 		ordersFile >> *inputOrder;
-		std::cout <<"NEW ORDER: " << *inputOrder << endl;
-		std::cout <<"BIDS:\n "<< Bids <<"\nASKS: \n"<< Asks << endl;
-		std::cout << "==========================\n\n";
-		printTransaction(TRANSACTIONS);
-		std::cout << "==========================\n\n";
-		if(inputOrder->getActionType() == 1) {/*
+		//Check if the order is a Bid
+		if (inputOrder->getActionType() == 1) {
+			//If the order is a marker order and the ask book is empty then ignore the order.
 			if (inputOrder->getOrderType() == 0 && Asks.length() == 0) {
-				break;
+				;
 			}
-			else */if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice())) {
+			//If the ask book is not empty and the order is a market bid or a relevant bid then proceed.
+			else if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || Asks[0] <= *inputOrder)) {
+				//Check if the Bid has a lower number of shares than the best Ask and create a transaction
 				if (Asks[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-					std::cout << "ASK: " << Asks[0] << " " << "BID: " << *inputOrder << endl;
-					std::cout << "TRANSACTION: " << TRANSACTIONS.back();
-					long shareDiff = Asks[0].getNumOfShares() - inputOrder->getNumOfShares();
+					shareDiff = Asks[0].getNumOfShares() - inputOrder->getNumOfShares();
 					Asks[0].setNumOfShares(shareDiff);
-					std::cout << "ASK: " << Asks[0] << endl;
+					trans << TRANSACTIONS.back();
+					printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 				}
+				//Check if the Bid matches the best Ask and create a transaction
 				else if (Asks[0].getNumOfShares() == inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-					std::cout << "ASK: " << Asks[0] << " " << "BID: " << *inputOrder << endl;
-					std::cout << "TRANSACTION: " << TRANSACTIONS.back();
 					if (Asks.length() > 0) std::cout << Asks[0];
 					Asks.deQueue();
+					trans << TRANSACTIONS.back();
+					printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 				}
 				else {
+					//If the Bid has a greater number of shares than the Ask and the ask book is not empty then proceed
 					while (inputOrder->getNumOfShares() > 0 && Asks.length() > 0) {
-						std::cout << "\n<<<>>> WHILE LOOP IN BID LAND <<<>>>\n";
-						if (inputOrder->getOrderPrice() < Asks[0].getOrderPrice() && inputOrder->getOrderPrice() !=0) {
-							std::cout << "\nCREATING BID\n";
+						//If the Bid is not matching with the Ask and the Bid is not a market bid then create a new Bid.
+						if (Asks[0] > *inputOrder && inputOrder->getOrderPrice() != 0) {
 							Bid *newBid = new Bid(inputOrder->getOrderType(),
 								inputOrder->getActionType(),
 								inputOrder->getOrderPrice(),
 								inputOrder->getNumOfShares(),
 								inputOrder->getAccountID());
-							//std::cout << *newBid;
 							Bids.enQueueBid(newBid);
 							shareDiff = 0;
 							inputOrder->setNumOfShares(shareDiff);
 						}
+						//If the Ask has a greater number of shares than the Bid, create a new transaction and adjust the shares
 						else if (Asks[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 							TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-							std::cout << "TRANSACTION: " << TRANSACTIONS.back();
-							std::cout << "ASK: " << Asks[0] << " " << "BID: " << *inputOrder << endl;
 							shareDiff = Asks[0].getNumOfShares() - inputOrder->getNumOfShares();
 							Asks[0].setNumOfShares(shareDiff);
 							shareDiff = 0;
 							inputOrder->setNumOfShares(shareDiff);
-							std::cout << "ASK: " << Asks[0] << endl;
+							trans << TRANSACTIONS.back();
+							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 						}
+						//If the Ask has less shares than or equal the incoming Bid then create a transaction and adjust the shares.
 						else if (Asks[0].getNumOfShares() <= inputOrder->getNumOfShares()) {
 							TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), Asks[0].getNumOfShares(), time(NULL)));
-							std::cout << "ASK: " << Asks[0] << " " << "BID: " << *inputOrder << endl;
-							std::cout << "TRANSACTION: " << TRANSACTIONS.back() << endl;
 							shareDiff = inputOrder->getNumOfShares() - Asks[0].getNumOfShares();
 							inputOrder->setNumOfShares(shareDiff);
-							std::cout << "BID: " << *inputOrder << endl;
 							Asks.deQueue();
+							trans << TRANSACTIONS.back();
+							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
+						}
+						//If the ask book runs out then discard the market Bid and log the unexecuted order if the shares left are not 0
+						if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
+							trans << "Market Inbalance - Bid order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 						}
 					}
 				}
 			}
 			else {
-				std::cout << "CONDITION: " << (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() >= Asks[0].getOrderPrice()))<<'\n';
-				std::cout << "\nCREATING BID\n";
+				//If the Bid is not compatible and limited then create a new Bid in the bid book
 				Bid *newBid = new Bid(inputOrder->getOrderType(),
 					inputOrder->getActionType(),
 					inputOrder->getOrderPrice(),
 					inputOrder->getNumOfShares(),
 					inputOrder->getAccountID());
-				std::cout << *newBid;
 				Bids.enQueueBid(newBid);
-				cout << Bids;
 			}
 		}
 		else {
+			//If the order is a marker order and the bid book is empty then ignore the order.
 			if (inputOrder->getOrderType() == 0 && Bids.length() == 0) {
-				cout << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID()<<" Volume : "<<inputOrder->getNumOfShares() <<" - unmatched"<<endl;
+				;
 			}
-			else if (Bids.length() > 0 && (inputOrder->getOrderPrice() == 0 || inputOrder->getOrderPrice() <= Bids[0].getOrderPrice())) {
+			//If the bid book is not empty and the order is a market ask or a relevant ask then proceed.
+			else if (Bids.length() > 0 && (inputOrder->getOrderPrice() == 0 || Bids[0] >= *inputOrder)) {
+				//Check if the Ask has a lower number of shares than the best Bid and create a transaction
 				if (Bids[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-					std::cout << "BID: " << Bids[0] << " " << "ASK: " << *inputOrder << endl;
-					std::cout << "TRANSACTION: " << TRANSACTIONS.back();
-					long shareDiff = Bids[0].getNumOfShares() - inputOrder->getNumOfShares();
+					shareDiff = Bids[0].getNumOfShares() - inputOrder->getNumOfShares();
 					Bids[0].setNumOfShares(shareDiff);
+					trans << TRANSACTIONS.back();
+					printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 				}
+				//Check if the Ask matches the best Bid and create a transaction
 				else if (Bids[0].getNumOfShares() == inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-					std::cout << "BID: " << Bids[0] << " " << "ASK: " << *inputOrder << endl;
-					std::cout << "TRANSACTION: " << TRANSACTIONS.back();
 					Bids.deQueue();
 					if (Bids.length() > 0) std::cout << Bids[0] << endl;
+					trans << TRANSACTIONS.back();
+					printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 				}
 				else {
+					//If the Ask has a greater number of shares than the Bid and the bid book is not empty then proceed
 					while (inputOrder->getNumOfShares() > 0 && Bids.length() > 0) {
-						std::cout << "\n<<<>>> WHILE LOOP ASK LAND<<<>>>\n";
-						//std::cout << "BID: " << Bids[0] << " " << "BID: " << *inputOrder << endl;
-						if (inputOrder->getOrderPrice() > Bids[0].getOrderPrice()) {
-							std::cout << "\nCREATING ASK\n";
+						//If the Ask is not matching with the Bid and the Ask is not a market ask then create a new Ask.
+						if (Bids[0] < *inputOrder && inputOrder->getOrderPrice() != 0) {
 							Ask *newAsk = new Ask(inputOrder->getOrderType(),
 								inputOrder->getActionType(),
 								inputOrder->getOrderPrice(),
 								inputOrder->getNumOfShares(),
 								inputOrder->getAccountID());
-							//std::cout << *newAsk;
 							Asks.enQueueAsk(newAsk);
 							shareDiff = 0;
 							inputOrder->setNumOfShares(shareDiff);
 						}
 						else if (Bids[0].getNumOfShares() > inputOrder->getNumOfShares()) {
+							//If the Bid has a greater number of shares than the Ask, create a new transaction and adjust the shares
 							TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-							std::cout << "BID: " << Bids[0] << " " << "ASK: " << *inputOrder << endl;
-							std::cout << "TRANSACTION: " << TRANSACTIONS.back();
 							shareDiff = Bids[0].getNumOfShares() - inputOrder->getNumOfShares();
 							Bids[0].setNumOfShares(shareDiff);
 							shareDiff = 0;
 							inputOrder->setNumOfShares(shareDiff);
-							std::cout << "BID: " << Bids[0] << endl;
+							trans << TRANSACTIONS.back();
+							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 						}
 						else if (Bids[0].getNumOfShares() <= inputOrder->getNumOfShares()) {
+							//If the Bid has less shares than or equal the incoming Ask then create a transaction and adjust the shares
 							TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), Bids[0].getNumOfShares(), time(NULL)));
-							std::cout << "BID: " << Bids[0] << " " << "ASK: " << *inputOrder << endl;
-							std::cout << "TRANSACTION: " << TRANSACTIONS.back() << endl;
 							shareDiff = inputOrder->getNumOfShares() - Bids[0].getNumOfShares();
 							inputOrder->setNumOfShares(shareDiff);
-							std::cout << "ASK: " << *inputOrder << endl;
 							Bids.deQueue();
+							trans << TRANSACTIONS.back();
+							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
+						}
+						if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
+							//If the bid book runs out then discard the market Ask and log the unexecuted order if the shares left are not 0
+							trans << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 						}
 					}
 				}
-				
+
 
 			}
 			else {
-				std::cout << "\nCREATING ASK\n";
+				//If the Ask is not compatible and limited then create a new Ask in the ask book
 				Ask *newAsk = new Ask(inputOrder->getOrderType(),
 					inputOrder->getActionType(),
 					inputOrder->getOrderPrice(),
 					inputOrder->getNumOfShares(),
 					inputOrder->getAccountID());
-				//std::cout << *newAsk;
 				Asks.enQueueAsk(newAsk);
 			}
 		}
-		//inputOrder = new Order;
-		//timeDelay(1);
+		timeDelay(delay);
 	}
-	std::cout << "asdasddwad" << endl;
-	std::cout << Bids << Asks;
-	printTransaction(TRANSACTIONS);
+	trans.close();
 	ordersFile.close();
-	return 0;
+	std::cout << endl;
 }

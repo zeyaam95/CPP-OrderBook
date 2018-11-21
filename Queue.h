@@ -1,3 +1,6 @@
+/*
+Author: Zeyaam Shahid
+*/
 #pragma once
 #include <iostream>
 
@@ -33,6 +36,8 @@ public:
 			delete prevNode;
 		}
 	}
+
+
 	void enQueueBid(anyType *item) {
 		if (!front) {
 			front = new Node<anyType>(item);
@@ -109,8 +114,10 @@ public:
 
 	anyType& operator[](const int NUM) {
 		Node<anyType> *temp = front;
-		while (temp != NULL && NUM != 0 && NUM < this->size) {
-			temp = temp->back;
+		if (temp != NULL && NUM != 0 && NUM < this->size) {
+			for (int i = 0; i < NUM; i++) {
+				temp = temp->back;
+			}
 		}
 		return *(temp->value);
 	}
