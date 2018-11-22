@@ -44,19 +44,20 @@ public:
 			size++;
 			return;
 		}
-		else if (*item >= *(front->value)) {
+		else if (*item > *(front->value)) {
 			Node<anyType> *prevNode = new Node<anyType>(item);
 			prevNode->back = front;
 			front = prevNode;
 			size++;
 			return;
+	
 		}
 		else {
 			Node<anyType> *temp = front;
 			Node<anyType> *prevNode = nullptr;
 			while (temp->back != nullptr) {
 				prevNode = temp;
-				if (*item <= *(temp->value) && *item >= *(temp->back->value)) {
+				if (*item <= *(temp->value) && *item > *(temp->back->value)) {
 					prevNode = new Node<anyType>(item);
 					prevNode->back = temp->back;
 					temp->back = prevNode;
@@ -77,7 +78,7 @@ public:
 			size++;
 			return;
 		}
-		else if (*item <= *(front->value)) {
+		else if (*item < *(front->value)) {
 			Node<anyType> *prevNode = new Node<anyType>(item);
 			prevNode->back = front;
 			front = prevNode;
@@ -89,7 +90,7 @@ public:
 			Node<anyType> *prevNode = nullptr;
 			while (temp->back != nullptr) {
 				prevNode = temp;
-				if (*item >= *(temp->value) && *item <= *(temp->back->value)) {
+				if (*item >= *(temp->value) && *item < *(temp->back->value)) {
 					prevNode = new Node<anyType>(item);
 					prevNode->back = temp->back;
 					temp->back = prevNode;
@@ -121,7 +122,7 @@ public:
 		}
 		return *(temp->value);
 	}
-	
+
 	friend std::ostream& operator<<(std::ostream& out, const Queue<anyType>& q) {
 		if (!q.front) return out;
 		Node<anyType> *temp = q.front;

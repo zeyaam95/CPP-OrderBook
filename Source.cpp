@@ -12,13 +12,13 @@ struct Transaction {
 	long BuyerID, SellerID, Shares;
 	double Price;
 	time_t TimeStamp;
-	Transaction(long buyer, long seller, double price, long share, time_t time) 
+	Transaction(long buyer, long seller, double price, long share, time_t time)
 		: BuyerID(buyer), SellerID(seller), Price(price), Shares(share), TimeStamp(time) {}
 	friend ostream& operator<<(ostream&, Transaction&);
 };
 
 ostream& operator<<(ostream& os, Transaction& tr) {
-	 os << tr.BuyerID << " "
+	os << tr.BuyerID << " "
 		<< tr.SellerID << " "
 		<< tr.Price << " "
 		<< tr.Shares << " "
@@ -49,9 +49,9 @@ int main() {
 }
 
 void printTransaction(Transaction &Tr, string ticker, double lPrice) {
-	std::cout << fixed << setprecision(2) << noshowpos 
-		<< ticker << " " << Tr.Price << setprecision(2) 
-		<< showpos<< " "<< (Tr.Price - lPrice) << 
+	std::cout << fixed << setprecision(2) << noshowpos
+		<< ticker << " " << Tr.Price << setprecision(2)
+		<< showpos << " " << (Tr.Price - lPrice) <<
 		setprecision(2) << " (" << (1 - (Tr.Price / lPrice)) * 100 << "%)" << endl;
 }
 
@@ -102,7 +102,7 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 	cin >> lastPrice;
 	cout << "Enter the order data file name: ";
 	cin >> fileName;
-	ordersFile.open("shortorder.dat", ios::in);
+	ordersFile.open(fileName, ios::in);
 	trans.open("trans.dat");
 	Order *inputOrder = new Order;
 	while (!ordersFile.eof()) {
@@ -112,10 +112,10 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 		if (inputOrder->getActionType() == 1) {
 			//If the order is a marker order and the ask book is empty then ignore the order.
 			if (inputOrder->getOrderType() == 0 && Asks.length() == 0) {
-				;
+				trans << "Market Inbalance - Bid order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 			}
 			//If the ask book is not empty and the order is a market bid or a relevant bid then proceed.
-			else if (Asks.length() > 0 && (inputOrder->getOrderPrice() == 0 || Asks[0] <= *inputOrder)) {
+			else if (Asks.length() != 0 && (inputOrder->getOrderPrice() == 0 || Asks[0] <= *inputOrder)) {
 				//Check if the Bid has a lower number of shares than the best Ask and create a transaction
 				if (Asks[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
@@ -127,7 +127,7 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 				//Check if the Bid matches the best Ask and create a transaction
 				else if (Asks[0].getNumOfShares() == inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(inputOrder->getAccountID(), Asks[0].getAccountID(), Asks[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
-					if (Asks.length() > 0) std::cout << Asks[0];
+					if (Asks.length() > 0)
 					Asks.deQueue();
 					trans << TRANSACTIONS.back();
 					printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
@@ -164,11 +164,13 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 							Asks.deQueue();
 							trans << TRANSACTIONS.back();
 							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
+							
 						}
-						//If the ask book runs out then discard the market Bid and log the unexecuted order if the shares left are not 0
-						if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
-							trans << "Market Inbalance - Bid order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
-						}
+						
+					}
+					//If the ask book runs out then discard the market Bid and log the unexecuted order if the shares left are not 0
+					if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
+						trans << "Market Inbalance - Bid order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 					}
 				}
 			}
@@ -185,10 +187,10 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 		else {
 			//If the order is a marker order and the bid book is empty then ignore the order.
 			if (inputOrder->getOrderType() == 0 && Bids.length() == 0) {
-				;
+				trans << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 			}
 			//If the bid book is not empty and the order is a market ask or a relevant ask then proceed.
-			else if (Bids.length() > 0 && (inputOrder->getOrderPrice() == 0 || Bids[0] >= *inputOrder)) {
+			else if (Bids.length() != 0 && (inputOrder->getOrderPrice() == 0 || Bids[0] >= *inputOrder)) {
 				//Check if the Ask has a lower number of shares than the best Bid and create a transaction
 				if (Bids[0].getNumOfShares() > inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
@@ -201,7 +203,7 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 				else if (Bids[0].getNumOfShares() == inputOrder->getNumOfShares()) {
 					TRANSACTIONS.push_back(Transaction(Bids[0].getAccountID(), inputOrder->getAccountID(), Bids[0].getOrderPrice(), inputOrder->getNumOfShares(), time(NULL)));
 					Bids.deQueue();
-					if (Bids.length() > 0) std::cout << Bids[0] << endl;
+					if (Bids.length() > 0)
 					trans << TRANSACTIONS.back();
 					printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
 				}
@@ -237,11 +239,13 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 							Bids.deQueue();
 							trans << TRANSACTIONS.back();
 							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
+							
 						}
-						if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
-							//If the bid book runs out then discard the market Ask and log the unexecuted order if the shares left are not 0
-							trans << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
-						}
+						
+					}
+					if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
+						//If the bid book runs out then discard the market Ask and log the unexecuted order if the shares left are not 0
+						trans << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 					}
 				}
 
