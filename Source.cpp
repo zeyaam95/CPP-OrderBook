@@ -164,12 +164,10 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 							Asks.deQueue();
 							trans << TRANSACTIONS.back();
 							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
-							
 						}
-						
 					}
 					//If the ask book runs out then discard the market Bid and log the unexecuted order if the shares left are not 0
-					if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
+					if (inputOrder->getNumOfShares() != 0) {
 						trans << "Market Inbalance - Bid order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 					}
 				}
@@ -239,16 +237,15 @@ void executeTransactions(Queue<Ask> &Asks, Queue<Bid> &Bids) {
 							Bids.deQueue();
 							trans << TRANSACTIONS.back();
 							printTransaction(TRANSACTIONS.back(), stockTicker, lastPrice);
-							
 						}
 						
 					}
-					if (inputOrder->getOrderType() == 0 && Bids.length() == 0 && inputOrder->getNumOfShares() != 0) {
+					if (inputOrder->getNumOfShares() != 0) {
 						//If the bid book runs out then discard the market Ask and log the unexecuted order if the shares left are not 0
 						trans << "Market Inbalance - Ask order ID: " << inputOrder->getAccountID() << " Volume : " << inputOrder->getNumOfShares() << " - unmatched" << endl;
 					}
 				}
-
+				
 
 			}
 			else {
